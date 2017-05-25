@@ -15,13 +15,13 @@ void WriteError(const std::string& str) {
   static int count = 0;
 
   if (count == 0) {
-	std::fstream ferrors("errors.txt", std::ios::out);
-	ferrors << str << "\n";
-	ferrors.close();
+    std::fstream ferrors("errors.txt", std::ios::out);
+    ferrors << str << "\n";
+    ferrors.close();
   } else {
-	std::fstream ferrors("errors.txt", std::ios::app);
-	ferrors << str << "\n";
-	ferrors.close();
+    std::fstream ferrors("errors.txt", std::ios::app);
+    ferrors << str << "\n";
+    ferrors.close();
   }
   ++count;
 }
@@ -47,7 +47,7 @@ std::vector<std::string> Split(const std::string& s) {
   std::vector<std::string> tokens;
 
   if(!strtk::parse(s, delimeters, tokens)) {
-	WriteError("Can't parse string: " + s);
+    WriteError("Can't parse string: " + s);
   }
   return tokens;
 }
@@ -70,7 +70,7 @@ Row GetRow(const std::string& str, const std::vector<std::string>& headers, size
   row.label = std::stod(tokens[1]);
 
   for(size_t i = 2; i != tokens.size(); ++i) {
-	row.features.push_back(hash_fun(headers[i] + "_" + tokens[i])&(size-1));
+    row.features.push_back(hash_fun(headers[i] + "_" + tokens[i])&(size-1));
   }
   return row;
 }
@@ -102,16 +102,16 @@ class FtrlProximal: public Ftrl {
   std::vector<double> grad_sum;
 
   FtrlProximal(double alpha_v, double beta_v,	
-  	           double l1_v, double l2_v, size_t size_v) {
+  	       double l1_v, double l2_v, size_t size_v) {
     alpha = alpha_v;
     beta = beta_v;
-	l1 = l1_v;
-	l2 = l2_v;
-	size = size_v;
+    l1 = l1_v;
+    l2 = l2_v;
+    size = size_v;
 
-	grad_sum.assign(size_v, 0.);
-	w_weights.assign(size_v, 0.);
-	z_weights.assign(size_v, 0.);
+    grad_sum.assign(size_v, 0.);
+    w_weights.assign(size_v, 0.);
+    z_weights.assign(size_v, 0.);
   }
 
   void GetHashIndiciesToUpdate(const std::vector<size_t>& features) {
@@ -121,39 +121,39 @@ class FtrlProximal: public Ftrl {
 
   void Update(const std::vector<size_t>& features, double prob, double label) {
     double grad;
-  	double sigma;
+    double sigma;
 
-  	grad = prob - label;
-  	GetHashIndiciesToUpdate(features);
+    grad = prob - label;
+    GetHashIndiciesToUpdate(features);
 
-  	for(auto it =  hash_idxs.begin(); it != hash_idxs.end(); ++it) {
-  	  size_t i = *it;
-  	  sigma = (sqrt(grad_sum[i] + grad * grad) - sqrt(grad_sum[i])) / alpha;
-  	  z_weights[i] += grad - sigma * w_weights[i];
-  	  grad_sum[i] += grad * grad;
-  	}
+    for(auto it =  hash_idxs.begin(); it != hash_idxs.end(); ++it) {
+      size_t i = *it;
+      sigma = (sqrt(grad_sum[i] + grad * grad) - sqrt(grad_sum[i])) / alpha;
+      z_weights[i] += grad - sigma * w_weights[i];
+      grad_sum[i] += grad * grad;
+    }
   }
 
   double Predict(const std::vector<size_t>& features) {
     GetHashIndiciesToUpdate(features);
 
     double wf_product=0;
-	for(auto it =  hash_idxs.begin(); it != hash_idxs.end(); ++it) {
+    for(auto it =  hash_idxs.begin(); it != hash_idxs.end(); ++it) {
   			
-  	  size_t i = *it;
-  	  int sign = (z_weights[i] < 0) ? -1 : 1;
+      size_t i = *it;
+      int sign = (z_weights[i] < 0) ? -1 : 1;
 
-  	  if (sign * z_weights[i] <= l1) {
-  	    w_weights[i] = 0;
-  	  } else {
-  	    w_weights[i] = (sign * l1 - z_weights[i]) / ((beta + sqrt(grad_sum[i])) /alpha + l2);
-  	  }
-
-  	  wf_product += w_weights[i];
-  	}
-  	
-  	return 1./(1. + exp(-std::max(std::min(wf_product, 35.), -35.)));
-  	}
+      if (sign * z_weights[i] <= l1) {
+        w_weights[i] = 0;
+      } else {
+  	w_weights[i] = (sign * l1 - z_weights[i]) / ((beta + sqrt(grad_sum[i])) /alpha + l2);
+      }
+	    
+      wf_product += w_weights[i];
+    }
+  
+    return 1./(1. + exp(-std::max(std::min(wf_product, 35.), -35.)));
+  }
 
   ~FtrlProximal() {}
 };
@@ -172,17 +172,17 @@ class FtrlProximal_approx: public Ftrl {
   std::vector<size_t> neg_count;
 
   FtrlProximal_approx(double alpha_v, double beta_v, 
-  	                  double l1_v, double l2_v, size_t size_v) {
+  	              double l1_v, double l2_v, size_t size_v) {
     alpha = alpha_v;
-	beta = beta_v;
-	l1 = l1_v;
-	l2 = l2_v;
-	size = size_v;
+    beta = beta_v;
+    l1 = l1_v;
+    l2 = l2_v;
+    size = size_v;
 
-	pos_count.assign(size_v, 0);
-	neg_count.assign(size_v, 0);
-	w_weights.assign(size_v, 0.);
-	z_weights.assign(size_v, 0.);
+    pos_count.assign(size_v, 0);
+    neg_count.assign(size_v, 0);
+    w_weights.assign(size_v, 0.);
+    z_weights.assign(size_v, 0.);
   }
 
   void GetHashIndiciesToUpdate(const std::vector<size_t>& features) {
@@ -191,50 +191,50 @@ class FtrlProximal_approx: public Ftrl {
   }
 
   double ApproximateGradSum(size_t pos, size_t neg) {
-    if (pos == 0 && neg == 0) { return 0;
-	} else {
-	  double pos_rate = pos / (pos + neg);
-	  return pos * (1 - pos_rate) * (1 - pos_rate) + neg * pos_rate * pos_rate - pos_rate * neg;
-	}
+    if (pos == 0 && neg == 0) { 
+      return 0;
+    } else {
+      double pos_rate = pos / (pos + neg);
+      return pos * (1 - pos_rate) * (1 - pos_rate) + neg * pos_rate * pos_rate - pos_rate * neg;
+    }
   }
 
   void Update(const std::vector<size_t>& features, double prob, double label) {
     double grad;
-  	double sigma;
+    double sigma;
 
-  	  grad = prob - label;
-  	  GetHashIndiciesToUpdate(features);
+    grad = prob - label;
+    GetHashIndiciesToUpdate(features);
 
-  	  for(auto it =  hash_idxs.begin(); it != hash_idxs.end(); ++it) {
-  	    size_t i = *it;
-  		double approx(ApproximateGradSum(pos_count[i], neg_count[i]));
+    for(auto it =  hash_idxs.begin(); it != hash_idxs.end(); ++it) {
+      size_t i = *it;
+      double approx(ApproximateGradSum(pos_count[i], neg_count[i]));
 
-  		sigma = (sqrt(approx + grad*grad) - sqrt(approx)) / alpha;
-  		z_weights[i] += grad - sigma * w_weights[i];
-  		// grad_sum[i] += grad * grad;
-  		pos_count[i] += label;
-  		neg_count[i] += (1-label);
-  	  }
+      sigma = (sqrt(approx + grad*grad) - sqrt(approx)) / alpha;
+      z_weights[i] += grad - sigma * w_weights[i];
+      pos_count[i] += label;
+      neg_count[i] += (1-label);
+    }
   }
 
   double Predict(const std::vector<size_t>& features) {
     GetHashIndiciesToUpdate(features);
 
-	double wf_product=0;
-	for(auto it =  hash_idxs.begin(); it != hash_idxs.end(); ++it) {
-  			
-      size_t i = *it;
-  	  int sign = (z_weights[i] < 0) ? -1 : 1;
-  	  double approx(ApproximateGradSum(pos_count[i], neg_count[i]));
+    double wf_product=0;
+    for(auto it =  hash_idxs.begin(); it != hash_idxs.end(); ++it) {
 
-  	  if (sign * z_weights[i] <= l1) {w_weights[i] = 0;
-  	  } else {
-  		w_weights[i] = (sign * l1 - z_weights[i]) / ((beta + sqrt(approx)) /alpha + l2);
-  	  }
-  	  wf_product += w_weights[i];
-  	}
-  	return 1./(1. + exp(-std::max(std::min(wf_product, 35.), -35.)));
-  		// return 1./(1. + exp(-wf_product));
+      size_t i = *it;
+      int sign = (z_weights[i] < 0) ? -1 : 1;
+      double approx(ApproximateGradSum(pos_count[i], neg_count[i]));
+
+      if (sign * z_weights[i] <= l1) {
+        w_weights[i] = 0;
+      } else {
+	w_weights[i] = (sign * l1 - z_weights[i]) / ((beta + sqrt(approx)) /alpha + l2);
+      }
+      wf_product += w_weights[i];
+    }
+    return 1./(1. + exp(-std::max(std::min(wf_product, 35.), -35.)));
   }
 
   ~FtrlProximal_approx() {}
@@ -271,12 +271,12 @@ std::map<std::string, double> ReadParams(const std::string& filename) {
 
   if(!fparams.is_open()) {
     WriteError("Params file doesn't exist\n");
-	exit(0);
+    exit(0);
   }
 
   while(std::getline(fparams, param_name, ' ')) {
     std::getline(fparams, param_value, '\n');
-	params[param_name] = std::stod(param_value);
+    params[param_name] = std::stod(param_value);
   }
   fparams.close();
   return params;
@@ -284,8 +284,8 @@ std::map<std::string, double> ReadParams(const std::string& filename) {
 
 
 void Train(std::shared_ptr<Ftrl>& ftrl, int epoch_count, size_t size,
-		   int holdout_period, std::vector<std::string>& headers,
-	       const std::string& ftrain_name, const std::string& fvalloss_name) {
+           int holdout_period, std::vector<std::string>& headers,
+	   const std::string& ftrain_name, const std::string& fvalloss_name) {
   flogs << "\nStart training...\n";
   size_t sample_count = 0;
   size_t val_sample_count = 0;
@@ -302,9 +302,9 @@ void Train(std::shared_ptr<Ftrl>& ftrl, int epoch_count, size_t size,
     // Open train file
     std::fstream ftrain(ftrain_name, std::ios::in);    
     if(epoch ==0 && !ftrain.is_open()) {
-	  WriteError("Train file doesn't exist");
-	  return;
-	}
+      WriteError("Train file doesn't exist");
+      return;
+    }
   
     // Read headers of features
     std::getline(ftrain, str);
@@ -315,34 +315,28 @@ void Train(std::shared_ptr<Ftrl>& ftrl, int epoch_count, size_t size,
       if(str == "") {
         continue;
       }
-	
-	  row = GetRow(str,  headers, size);
-	  prob = ftrl->Predict(row.features);
 
-	  if(sample_count > 0 && (sample_count % (holdout_period) == 0)) {
-	    
-	    ++val_sample_count;
-	    loss += CountLogloss(prob, row.label);
-	    val_loss.push_back(loss/val_sample_count);
+      row = GetRow(str,  headers, size);
+      prob = ftrl->Predict(row.features);
 
-	    if (IsDegree2(val_sample_count)) {
-	      std::cout << "Epoch: "<< epoch << ", total samples: " << sample_count 
-		            << ", val samples: " << val_sample_count 
-		            << ", average val logloss: " << (loss/val_sample_count) 
-		            << "\n";
+      if(sample_count > 0 && (sample_count % (holdout_period) == 0)) {
 
-		  flogs << "Epoch: "<< epoch << ", total samples: " << sample_count 
-		        << ", val samples: " << val_sample_count 
-			    << ", average val logloss: " << (loss/val_sample_count) 
-			    << "\n";
-				}	
+        ++val_sample_count;
+        loss += CountLogloss(prob, row.label);
+        val_loss.push_back(loss/val_sample_count);
 
-	  } else { 
-		ftrl->Update(row.features, prob, row.label);
-	  }
-    ++sample_count;    
+        if (IsDegree2(val_sample_count)) {
+          flogs << "Epoch: "<< epoch << ", total samples: " << sample_count 
+	        << ", val samples: " << val_sample_count 
+	        << ", average val logloss: " << (loss/val_sample_count) 
+	        << "\n";
+        }	
+      } else { 
+        ftrl->Update(row.features, prob, row.label);
+      }
+      ++sample_count;    
     }  
-  ftrain.close();  
+    ftrain.close();  
   }
 	
   WriteValLoss(fvalloss_name, val_loss);
@@ -354,8 +348,8 @@ void Train(std::shared_ptr<Ftrl>& ftrl, int epoch_count, size_t size,
 
 
 void Test(std::shared_ptr<Ftrl>& ftrl, size_t size,
-		  std::vector<std::string>& headers,
-	      const std::string& ftest_name, const std::string& fresult_name) {
+	  std::vector<std::string>& headers,
+          const std::string& ftest_name, const std::string& fresult_name) {
 
   flogs << "\nStart Predicting...\n";
   Row row;
@@ -366,7 +360,7 @@ void Test(std::shared_ptr<Ftrl>& ftrl, size_t size,
   std::fstream ftest(ftest_name, std::ios::in);
   if(!ftest.is_open()) {
     WriteError("Test file doesn't exist");
-	return;
+    return;
   }
 
   // Open file to write Predictions 
@@ -378,15 +372,15 @@ void Test(std::shared_ptr<Ftrl>& ftrl, size_t size,
   size_t counter = 0;
   while (std::getline(ftest, str)) {
     if(str == "") {
-	  continue;
-	}
+      continue;
+    }
 	
-	++counter;
-	row = GetRow(str, headers, size);
-	prob = ftrl->Predict(row.features);
-	test_loss += CountLogloss(prob, row.label);
+    ++counter;
+    row = GetRow(str, headers, size);
+    prob = ftrl->Predict(row.features);
+    test_loss += CountLogloss(prob, row.label);
 
-	fresult << row.id << "," << std::fixed << std::setprecision(13) << prob << "\n";
+    fresult << row.id << "," << std::fixed << std::setprecision(13) << prob << "\n";
   }
 	
   flogs << "Test samples: " << counter << ", Test loss: " << (test_loss/counter) << "\n";
@@ -401,9 +395,9 @@ int main(int argc, char* argv[]) {
   // Read arguments from command line
   if (argc < 5) {
     std::string argv0(argv[0]);
-	std::string error = "Usage:" + argv0 + " fparams.txt ftrain.csv ftest.csv fresult.txt";
-	WriteError(error);
-	return 0;
+    std::string error = "Usage:" + argv0 + " fparams.txt ftrain.csv ftest.csv fresult.txt";
+    WriteError(error);
+    return 0;
   }
 
   // Create file instances
@@ -438,7 +432,7 @@ int main(int argc, char* argv[]) {
   if (is_approx) { 
     ftrl.reset(new FtrlProximal(alpha, beta, l1, l2, size));
   } else {
-  	ftrl.reset(new FtrlProximal_approx(alpha, beta, l1, l2, size));
+    ftrl.reset(new FtrlProximal_approx(alpha, beta, l1, l2, size));
   }	
   flogs << "\nFtrlProximal created\n";
   
