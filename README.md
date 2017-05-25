@@ -12,7 +12,7 @@ FTRL-Proximal (далее FTRL) является онлайн-алгоритмо
 
 Алгорит FTRL с покординатным learning rate и L1, L2 регуляризациями выглядит следующим образом
 
-![alt text](figures/ftrl.png)
+<img src="figures/ftrl.png" width="500">
 
 ### Данные
 
